@@ -20,7 +20,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/Auth/Logout";
         options.AccessDeniedPath = "/Auth/Login";
     });
-
+    
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 

@@ -1,54 +1,58 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using UserManagementApp.Data;
+using Microsoft.AspNetCore.Identity;
 using UserManagementApp.Models;
-using UserManagementApp.Services;
+using UserManagementApp.Data;
 
-namespace UserManagementApp.Pages.Auth
+namespace UserManagementApp.Pages.Auth;
+
+public class RegisterModel : PageModel
 {
-    public class RegisterModel : PageModel
+    private readonly AppDbContext _db;
+    private readonly PasswordHasher<User> _hasher = new();
+
+    public RegisterModel(AppDbContext db)
     {
-        private readonly AppDbContext _db;
-        private readonly PasswordService _passwordService;
+        _db = db;
+    }
 
-        public RegisterModel(AppDbContext db, PasswordService passwordService)
-        {
-            _db = db;
-            _passwordService = passwordService;
-        }
+    [BindProperty]
+    public InputModel Input { get; set; } = new();
 
-        [BindProperty]
+    public class InputModel
+    {
         public string Email { get; set; } = null!;
-
-        [BindProperty]
         public string Password { get; set; } = null!;
+    }
 
-        public string? Message { get; set; }
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
+            return Page();
 
-        public async Task<IActionResult> OnPostAsync()
+        var user = new User
         {
-            var user = new User
-            {
-                Email = Email,
-                PasswordHash = _passwordService.Hash(Password),
-                Status = UserStatus.Unverified,
-                EmailConfirmationToken = Guid.NewGuid().ToString()
-            };
+            Id = Guid.NewGuid(),
+            Email = Input.Email,
+            Status = UserStatus.Unverified,
+            RegisteredAt = DateTime.UtcNow
+        };
 
-            try
-            {
-                _db.Users.Add(user);
-                await _db.SaveChangesAsync();
-            }
-            catch
-            {
-                // UNIQUE INDEX violation lands here
-                Message = "Registration failed. Email may already exist.";
-                return Page();
-            }
+        user.PasswordHash = _hasher.HashPassword(user, Input.Password);
 
-            Message = "Registration successful. Please check your e-mail.";
+        _db.Users.Add(user);
+
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch
+        {
+            ModelState.AddModelError("", "Email already exists.");
             return Page();
         }
+
+        TempData["Success"] = "Registration successful. You can log in now.";
+        return RedirectToPage("/Auth/Login");
     }
 }

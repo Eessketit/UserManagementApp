@@ -1,71 +1,70 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using UserManagementApp.Data;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 using UserManagementApp.Models;
-using UserManagementApp.Services;
+using UserManagementApp.Data;
 
-namespace UserManagementApp.Pages.Auth
+namespace UserManagementApp.Pages.Auth;
+
+public class LoginModel : PageModel
 {
-    public class LoginModel : PageModel
+    private readonly AppDbContext _db;
+    private readonly PasswordHasher<User> _hasher = new();
+
+    public LoginModel(AppDbContext db)
     {
-        private readonly AppDbContext _db;
-        private readonly PasswordService _passwordService;
+        _db = db;
+    }
 
-        public LoginModel(AppDbContext db, PasswordService passwordService)
-        {
-            _db = db;
-            _passwordService = passwordService;
-        }
+    [BindProperty]
+    public InputModel Input { get; set; } = new();
 
-        [BindProperty]
+    public class InputModel
+    {
         public string Email { get; set; } = null!;
-
-        [BindProperty]
         public string Password { get; set; } = null!;
+    }
 
-        public string? Message { get; set; }
+    public async Task<IActionResult> OnPostAsync()
+    {
+        var user = _db.Users.FirstOrDefault(u => u.Email == Input.Email);
 
-        public async Task<IActionResult> OnPostAsync()
+        if (user == null ||
+            _hasher.VerifyHashedPassword(user, user.PasswordHash, Input.Password)
+            == PasswordVerificationResult.Failed)
         {
-            var user = await _db.Users
-                .SingleOrDefaultAsync(u => u.Email == Email);
-
-            if (user == null ||
-                !_passwordService.Verify(user.PasswordHash, Password))
-            {
-                Message = "Invalid email or password.";
-                return Page();
-            }
-
-            if (user.Status == UserStatus.Blocked)
-            {
-                Message = "Your account is blocked.";
-                return Page();
-            }
-
-            user.LastLoginAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
-/*  */
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim("Status", user.Status.ToString())
-            };
-
-            var identity = new ClaimsIdentity(
-                claims,
-                CookieAuthenticationDefaults.AuthenticationScheme);
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity));
-
-            return RedirectToPage("/Index");
+            ModelState.AddModelError("", "Invalid email or password.");
+            return Page();
         }
+
+        if (user.Status == UserStatus.Blocked)
+        {
+            ModelState.AddModelError("", "Your account is blocked.");
+            return Page();
+        }
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Email)
+        };
+
+        var identity = new ClaimsIdentity(
+            claims,
+            CookieAuthenticationDefaults.AuthenticationScheme
+        );
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(identity)
+        );
+
+        user.LastLoginAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return RedirectToPage("/Admin/Users");
     }
 }
