@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using UserManagementApp.Data;
 using UserManagementApp.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using UserManagementApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,10 +13,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<PasswordService>();
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/Auth/Login";
+    });
+
+
 var app = builder.Build();
 
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapRazorPages();
 
