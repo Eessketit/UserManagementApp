@@ -41,62 +41,60 @@
         </thead>
 
         <tbody>
-        @foreach (var u in Model.Users)
-        {
-            <tr>
-                <td>
-                    <input type="checkbox"
-                           name="SelectedIds"
-                           value="@u.Id"
-                           class="row-check" />
-                </td>
+            @foreach (var u in Model.Users)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="SelectedIds" value="@u.Id" class="row-check" />
+                    </td>
 
-                <td>@u.Name</td>
+                    <td>
+                        <strong>@u.Name</strong><br />
+                        <small class="text-muted">@u.Address</small>
+                    </td>
 
-                <td>@u.Email</td>
+                    <td>@u.Email</td>
 
-                <td>@u.Address</td>
+                    <td>
+                        @(u.LastLoginAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")
+                    </td>
 
-                <td>
-                    @(u.LastLoginAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")
-                </td>
-
-                <td>
-                    @if (u.Status == UserStatus.Blocked)
-                    {
-                        <span class="badge bg-danger">Blocked</span>
-                    }
-                    else if (u.Status == UserStatus.Active)
-                    {
-                        <span class="badge bg-success">Active</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Unverified</span>
-                    }
-                </td>
-            </tr>
-        }
+                    <td>
+                        @if (u.Status == UserStatus.Blocked)
+                        {
+                            <span class="badge bg-danger">Blocked</span>
+                        }
+                        else if (u.Status == UserStatus.Active)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Unverified</span>
+                        }
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 </form>
 
 @section Scripts {
-<script>
-    const selectAll = document.getElementById('selectAll');
-    const checks = document.querySelectorAll('.row-check');
-    const buttons = document.querySelectorAll('#btnBlock,#btnUnblock,#btnDelete');
+    <script>
+        const selectAll = document.getElementById('selectAll');
+        const checks = document.querySelectorAll('.row-check');
+        const buttons = document.querySelectorAll('#btnBlock,#btnUnblock,#btnDelete');
 
-    function updateButtons() {
-        const anyChecked = [...checks].some(c => c.checked);
-        buttons.forEach(b => b.disabled = !anyChecked);
-    }
+        function updateButtons() {
+            const anyChecked = [...checks].some(c => c.checked);
+            buttons.forEach(b => b.disabled = !anyChecked);
+        }
 
-    selectAll.addEventListener('change', e => {
-        checks.forEach(c => c.checked = e.target.checked);
-        updateButtons();
-    });
+        selectAll.addEventListener('change', e => {
+            checks.forEach(c => c.checked = e.target.checked);
+            updateButtons();
+        });
 
-    checks.forEach(c => c.addEventListener('change', updateButtons));
-</script>
+        checks.forEach(c => c.addEventListener('change', updateButtons));
+    </script>
 }

@@ -32,8 +32,7 @@ public class LoginModel : PageModel
         [Required]
         public string Password { get; set; } = "";
     }
-
-
+    
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
