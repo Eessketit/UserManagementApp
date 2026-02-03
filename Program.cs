@@ -3,7 +3,7 @@ using UserManagementApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// KESTREL PORT 
+// KESTREL PORT (Render requirement)
 builder.WebHost.ConfigureKestrel(options =>
 {
     var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
@@ -12,11 +12,11 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // DATABASE
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-string? connectionString;
+string connectionString;
 
-if (!string.IsNullOrEmpty(databaseUrl))
+if (!string.IsNullOrWhiteSpace(databaseUrl))
 {
-    // Convert postgres:// URL (Render) → Npgsql connection string
+    // Convert postgres:// → Npgsql format
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':', 2);
 
@@ -31,16 +31,17 @@ if (!string.IsNullOrEmpty(databaseUrl))
 else
 {
     // Local development
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new Exception("No database connection string configured.");
 }
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-
 // AUTH
 builder.Services
-    .AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddAuthentication(
+        Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Auth/Login";
@@ -69,5 +70,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
-
 app.Run();
