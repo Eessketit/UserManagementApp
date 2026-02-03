@@ -1,0 +1,87 @@
+@page
+@model UserManagementApp.Pages.Admin.UsersModel
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<h3 class="mb-3">User Management</h3>
+
+<form method="post">
+
+    <!-- TOOLBAR -->
+    <div class="btn-toolbar mb-2 gap-2">
+        <button asp-page-handler="Block" class="btn btn-danger" disabled id="btnBlock">
+            Block
+        </button>
+
+        <button asp-page-handler="Unblock" class="btn btn-outline-success" disabled id="btnUnblock"
+            title="Unblock selected users">
+            <i class="bi bi-unlock"></i>
+        </button>
+
+        <button asp-page-handler="Delete" class="btn btn-outline-danger" disabled id="btnDelete"
+            title="Delete selected users">
+            <i class="bi bi-trash"></i>
+        </button>
+
+        <button asp-page-handler="DeleteUnverified" class="btn btn-outline-secondary"
+            title="Delete all unverified users">
+            <i class="bi bi-person-x"></i>
+        </button>
+    </div>
+
+    <!-- TABLE -->
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th style="width:40px">
+                    <input type="checkbox" id="selectAll" />
+                </th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Last login</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model.Users)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="selectedIds" value="@u.Id" class="row-check" />
+                    </td>
+                    <td>@u.Name</td>
+                    <td>@u.Email</td>
+                    <td>@u.LastLoginAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        <span class="badge bg-@(
+                              u.Status == UserManagementApp.Models.UserStatus.Active ? "success" :
+                              u.Status == UserManagementApp.Models.UserStatus.Blocked ? "danger" : "secondary")">
+                            @u.Status
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>
+
+@section Scripts {
+    <script>
+        const selectAll = document.getElementById('selectAll');
+        const checks = document.querySelectorAll('.row-check');
+        const buttons = document.querySelectorAll('#btnBlock,#btnUnblock,#btnDelete');
+
+        function updateButtons() {
+            const anyChecked = [...checks].some(c => c.checked);
+            buttons.forEach(b => b.disabled = !anyChecked);
+        }
+
+        selectAll.addEventListener('change', e => {
+            checks.forEach(c => c.checked = e.target.checked);
+            updateButtons();
+        });
+
+        checks.forEach(c => c.addEventListener('change', updateButtons));
+    </script>
+}

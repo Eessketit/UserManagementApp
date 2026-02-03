@@ -12,10 +12,10 @@ namespace UserManagementApp.Pages.Auth
 {
     public class LoginModel : PageModel
     {
-        private readonly ApplicationDbContext _db;
+        private readonly AppDbContext _db;
         private readonly PasswordService _passwordService;
 
-        public LoginModel(ApplicationDbContext db, PasswordService passwordService)
+        public LoginModel(AppDbContext db, PasswordService passwordService)
         {
             _db = db;
             _passwordService = passwordService;
@@ -49,7 +49,7 @@ namespace UserManagementApp.Pages.Auth
 
             user.LastLoginAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
-
+/*  */
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),

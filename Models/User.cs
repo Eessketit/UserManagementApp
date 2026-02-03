@@ -1,32 +1,26 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace UserManagementApp.Models
+namespace UserManagementApp.Models;
+
+public class User
 {
-    public enum UserStatus
-    {
-        Unverified = 0,
-        Active = 1,
-        Blocked = 2
-    }
+    [Key]
+    public Guid Id { get; set; } = Guid.NewGuid(); // ✅ FIX #1
 
-    public class User
-    {
-        [Key]
-        public Guid Id { get; set; }
+    [Required, EmailAddress]
+    public string Email { get; set; } = null!;
 
-        [Required]
-        public string Email { get; set; } = null!;
+    public string? Name { get; set; } // ✅ FIX #2
 
-        [Required]
-        public string PasswordHash { get; set; } = null!;
+    [Required]
+    public string PasswordHash { get; set; } = null!;
 
-        public UserStatus Status { get; set; } = UserStatus.Unverified;
+    public UserStatus Status { get; set; } = UserStatus.Unverified;
 
-        public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
+    public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime? LastLoginAt { get; set; }
+    public DateTime? LastLoginAt { get; set; }
 
-        public string? EmailConfirmationToken { get; set; }
-    }
+    public string? EmailConfirmationToken { get; set; }
 }

@@ -8,10 +8,10 @@ namespace UserManagementApp.Pages.Auth
 {
     public class RegisterModel : PageModel
     {
-        private readonly ApplicationDbContext _db;
+        private readonly AppDbContext _db;
         private readonly PasswordService _passwordService;
 
-        public RegisterModel(ApplicationDbContext db, PasswordService passwordService)
+        public RegisterModel(AppDbContext db, PasswordService passwordService)
         {
             _db = db;
             _passwordService = passwordService;

@@ -1,15 +1,29 @@
 using Microsoft.EntityFrameworkCore;
 using UserManagementApp.Models;
 
-namespace UserManagementApp.Data
-{
-    public class ApplicationDbContext : DbContext
-    {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
+namespace UserManagementApp.Data;
 
-        public DbSet<User> Users { get; set; }
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<User> Users => Set<User>();
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<User>(e =>
+        {
+            e.HasIndex(u => u.Email)
+             .HasDatabaseName("ux_users_email")
+             .IsUnique();
+
+            e.Property(u => u.Email)
+             .IsRequired();
+        });
     }
 }

@@ -15,7 +15,7 @@ namespace UserManagementApp.Middleware
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context, ApplicationDbContext db)
+        public async Task InvokeAsync(HttpContext context, AppDbContext db)
         {
             var path = context.Request.Path.Value?.ToLower();
 
@@ -23,6 +23,7 @@ namespace UserManagementApp.Middleware
             if (path != null &&
                 (path.StartsWith("/auth/login")
                  || path.StartsWith("/auth/register")
+                 || path.StartsWith("/auth/logout")
                  || path.StartsWith("/css")
                  || path.StartsWith("/js")
                  || path.StartsWith("/lib")))
@@ -56,10 +57,13 @@ namespace UserManagementApp.Middleware
             await _next(context);
         }
 
+        // ✅ THIS METHOD WAS MISSING
         private static async Task ForceLogout(HttpContext context)
         {
             await context.SignOutAsync();
-            context.Response.Redirect("/Auth/Login");
+
+            context.Response.StatusCode = StatusCodes.Status302Found;
+            context.Response.Headers.Location = "/Auth/Login";
         }
     }
 }
