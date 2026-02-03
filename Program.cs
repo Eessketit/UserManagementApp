@@ -12,20 +12,31 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // DATABASE
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+string? connectionString;
 
 if (!string.IsNullOrEmpty(databaseUrl))
 {
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(databaseUrl));
+    // Convert postgres:// URL (Render) → Npgsql connection string
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':', 2);
+
+    connectionString =
+        $"Host={uri.Host};" +
+        $"Port={uri.Port};" +
+        $"Database={uri.AbsolutePath.TrimStart('/')};" +
+        $"Username={userInfo[0]};" +
+        $"Password={userInfo[1]};" +
+        $"SSL Mode=Require;Trust Server Certificate=true";
 }
 else
 {
     // Local development
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(
-            builder.Configuration.GetConnectionString("DefaultConnection")
-        ));
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 }
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
 
 // AUTH
 builder.Services
