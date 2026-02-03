@@ -13,14 +13,31 @@
                     <i class="bi bi-person-plus"></i> Register
                 </h3>
 
-                <form method="post">
+                <form method="post" novalidate>
 
+                    <!-- EMAIL -->
                     <div class="mb-3">
                         <label asp-for="Input.Email" class="form-label"></label>
                         <input asp-for="Input.Email" class="form-control" />
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
 
+                    <!-- NAME (REQUIRED) -->
+                    <div class="mb-3">
+                        <label asp-for="Input.Name" class="form-label"></label>
+                        <input asp-for="Input.Name" class="form-control" required />
+                        <span asp-validation-for="Input.Name" class="text-danger"></span>
+                    </div>
+
+                    <!-- ADDRESS (OPTIONAL) -->
+                    <div class="mb-3">
+                        <label asp-for="Input.Address" class="form-label"></label>
+                        <input asp-for="Input.Address" class="form-control" />
+                        <div class="form-text">Optional</div>
+                        <span asp-validation-for="Input.Address" class="text-danger"></span>
+                    </div>
+
+                    <!-- PASSWORD -->
                     <div class="mb-3">
                         <label asp-for="Input.Password" class="form-label"></label>
                         <input asp-for="Input.Password" type="password" class="form-control" />
@@ -43,3 +60,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

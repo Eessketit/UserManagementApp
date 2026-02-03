@@ -38,15 +38,16 @@ namespace UserManagementApp.Pages.Users
 
         public async Task<IActionResult> OnPostBlockAsync()
         {
-            await UpdateStatusAsync(true);
+            await UpdateStatusAsync(UserStatus.Blocked);
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostUnblockAsync()
         {
-            await UpdateStatusAsync(false);
+            await UpdateStatusAsync(UserStatus.Active);
             return RedirectToPage();
         }
+
 
         public async Task<IActionResult> OnPostDeleteAsync()
         {
@@ -62,7 +63,7 @@ namespace UserManagementApp.Pages.Users
             return RedirectToPage();
         }
 
-        private async Task UpdateStatusAsync(bool block)
+        private async Task UpdateStatusAsync(UserStatus status)
         {
             if (!SelectedIds.Any())
                 return;
@@ -73,9 +74,7 @@ namespace UserManagementApp.Pages.Users
 
             foreach (var user in users)
             {
-                user.Status = block
-                    ? UserStatus.Blocked
-                    : UserStatus.Active;
+                user.Status = status;
             }
 
             await _db.SaveChangesAsync();

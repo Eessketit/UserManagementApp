@@ -1,15 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Identity;
-using UserManagementApp.Models;
+using System.ComponentModel.DataAnnotations;
 using UserManagementApp.Data;
+using UserManagementApp.Models;
 
 namespace UserManagementApp.Pages.Auth;
 
 public class RegisterModel : PageModel
 {
     private readonly AppDbContext _db;
-    private readonly PasswordHasher<User> _hasher = new();
+    private readonly PasswordHasher<User> _passwordHasher = new();
 
     public RegisterModel(AppDbContext db)
     {
@@ -21,8 +22,17 @@ public class RegisterModel : PageModel
 
     public class InputModel
     {
-        public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required, MinLength(6)]
+        public string Password { get; set; } = "";
+
+        [Required, MinLength(2)]
+        public string Name { get; set; } = "";
+
+        // optional
+        public string? Address { get; set; }
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -33,26 +43,27 @@ public class RegisterModel : PageModel
         var user = new User
         {
             Id = Guid.NewGuid(),
-            Email = Input.Email,
+            Email = Input.Email.Trim(),
+
+            // REQUIRED → always valid
+            Name = Input.Name.Trim(),
+
+            // Optional → fallback ONLY if empty
+            Address = string.IsNullOrWhiteSpace(Input.Address)
+                ? "N/A"
+                : Input.Address.Trim(),
+
             Status = UserStatus.Unverified,
-            RegisteredAt = DateTime.UtcNow
+            RegisteredAt = DateTime.UtcNow,
+            LastLoginAt = null
         };
 
-        user.PasswordHash = _hasher.HashPassword(user, Input.Password);
+        user.PasswordHash =
+            _passwordHasher.HashPassword(user, Input.Password);
 
         _db.Users.Add(user);
+        await _db.SaveChangesAsync();
 
-        try
-        {
-            await _db.SaveChangesAsync();
-        }
-        catch
-        {
-            ModelState.AddModelError("", "Email already exists.");
-            return Page();
-        }
-
-        TempData["Success"] = "Registration successful. You can log in now.";
         return RedirectToPage("/Auth/Login");
     }
 }

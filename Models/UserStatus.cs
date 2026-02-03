@@ -1,8 +1,9 @@
-namespace UserManagementApp.Models;
-
-public enum UserStatus
+namespace UserManagementApp.Models
 {
-    Unverified = 0,
-    Active = 1,
-    Blocked = 2
+    public enum UserStatus
+    {
+        Unverified = 0,
+        Active = 1,
+        Blocked = 2
+    }
 }

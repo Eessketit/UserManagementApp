@@ -57,7 +57,6 @@ namespace UserManagementApp.Middleware
             await _next(context);
         }
 
-        // ✅ THIS METHOD WAS MISSING
         private static async Task ForceLogout(HttpContext context)
         {
             await context.SignOutAsync();

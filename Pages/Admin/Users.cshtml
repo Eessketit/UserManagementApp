@@ -1,5 +1,7 @@
 @page
 @model UserManagementApp.Pages.Admin.UsersModel
+@using UserManagementApp.Models
+
 @{
     ViewData["Title"] = "User Management";
 }
@@ -9,29 +11,22 @@
 <form method="post">
 
     <!-- TOOLBAR -->
-    <div class="btn-toolbar mb-2 gap-2">
+    <div class="btn-toolbar mb-3 gap-2">
         <button asp-page-handler="Block" class="btn btn-danger" disabled id="btnBlock">
             Block
         </button>
 
-        <button asp-page-handler="Unblock" class="btn btn-outline-success" disabled id="btnUnblock"
-            title="Unblock selected users">
-            <i class="bi bi-unlock"></i>
+        <button asp-page-handler="Unblock" class="btn btn-success" disabled id="btnUnblock">
+            Unblock
         </button>
 
-        <button asp-page-handler="Delete" class="btn btn-outline-danger" disabled id="btnDelete"
-            title="Delete selected users">
-            <i class="bi bi-trash"></i>
-        </button>
-
-        <button asp-page-handler="DeleteUnverified" class="btn btn-outline-secondary"
-            title="Delete all unverified users">
-            <i class="bi bi-person-x"></i>
+        <button asp-page-handler="Delete" class="btn btn-outline-danger" disabled id="btnDelete">
+            <i class="bi bi-trash"></i> Delete
         </button>
     </div>
 
-    <!-- TABLE -->
-    <table class="table table-bordered table-hover align-middle">
+    <!-- USERS TABLE -->
+    <table class="table table-hover align-middle">
         <thead class="table-light">
             <tr>
                 <th style="width:40px">
@@ -39,49 +34,69 @@
                 </th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Address</th>
                 <th>Last login</th>
                 <th>Status</th>
             </tr>
         </thead>
+
         <tbody>
-            @foreach (var u in Model.Users)
-            {
-                <tr>
-                    <td>
-                        <input type="checkbox" name="selectedIds" value="@u.Id" class="row-check" />
-                    </td>
-                    <td>@u.Name</td>
-                    <td>@u.Email</td>
-                    <td>@u.LastLoginAt?.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>
-                        <span class="badge bg-@(
-                              u.Status == UserManagementApp.Models.UserStatus.Active ? "success" :
-                              u.Status == UserManagementApp.Models.UserStatus.Blocked ? "danger" : "secondary")">
-                            @u.Status
-                        </span>
-                    </td>
-                </tr>
-            }
+        @foreach (var u in Model.Users)
+        {
+            <tr>
+                <td>
+                    <input type="checkbox"
+                           name="SelectedIds"
+                           value="@u.Id"
+                           class="row-check" />
+                </td>
+
+                <td>@u.Name</td>
+
+                <td>@u.Email</td>
+
+                <td>@u.Address</td>
+
+                <td>
+                    @(u.LastLoginAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")
+                </td>
+
+                <td>
+                    @if (u.Status == UserStatus.Blocked)
+                    {
+                        <span class="badge bg-danger">Blocked</span>
+                    }
+                    else if (u.Status == UserStatus.Active)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Unverified</span>
+                    }
+                </td>
+            </tr>
+        }
         </tbody>
     </table>
 </form>
 
 @section Scripts {
-    <script>
-        const selectAll = document.getElementById('selectAll');
-        const checks = document.querySelectorAll('.row-check');
-        const buttons = document.querySelectorAll('#btnBlock,#btnUnblock,#btnDelete');
+<script>
+    const selectAll = document.getElementById('selectAll');
+    const checks = document.querySelectorAll('.row-check');
+    const buttons = document.querySelectorAll('#btnBlock,#btnUnblock,#btnDelete');
 
-        function updateButtons() {
-            const anyChecked = [...checks].some(c => c.checked);
-            buttons.forEach(b => b.disabled = !anyChecked);
-        }
+    function updateButtons() {
+        const anyChecked = [...checks].some(c => c.checked);
+        buttons.forEach(b => b.disabled = !anyChecked);
+    }
 
-        selectAll.addEventListener('change', e => {
-            checks.forEach(c => c.checked = e.target.checked);
-            updateButtons();
-        });
+    selectAll.addEventListener('change', e => {
+        checks.forEach(c => c.checked = e.target.checked);
+        updateButtons();
+    });
 
-        checks.forEach(c => c.addEventListener('change', updateButtons));
-    </script>
+    checks.forEach(c => c.addEventListener('change', updateButtons));
+</script>
 }

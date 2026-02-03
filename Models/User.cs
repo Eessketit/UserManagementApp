@@ -1,26 +1,33 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace UserManagementApp.Models;
-
-public class User
+namespace UserManagementApp.Models
 {
-    [Key]
-    public Guid Id { get; set; } = Guid.NewGuid(); // ✅ FIX #1
+    public class User
+    {
+        [Key]
+        public Guid Id { get; set; }
 
-    [Required, EmailAddress]
-    public string Email { get; set; } = null!;
+        [Required]
+        public string Email { get; set; } = null!;
 
-    public string? Name { get; set; } // ✅ FIX #2
+        [Required]
+        public string PasswordHash { get; set; } = null!;
 
-    [Required]
-    public string PasswordHash { get; set; } = null!;
+        // NEW
+        [Required]
+        public string Name { get; set; } = "N/A";
 
-    public UserStatus Status { get; set; } = UserStatus.Unverified;
+        // NEW
+        [Required]
+        public string Address { get; set; } = "N/A";
 
-    public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
+        public UserStatus Status { get; set; } = UserStatus.Unverified;
 
-    public DateTime? LastLoginAt { get; set; }
+        public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
 
-    public string? EmailConfirmationToken { get; set; }
+        public DateTime? LastLoginAt { get; set; }
+
+        public string? EmailConfirmationToken { get; set; }
+    }
 }

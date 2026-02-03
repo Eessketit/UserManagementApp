@@ -27,41 +27,58 @@ public class UsersModel : PageModel
             .ToListAsync();
     }
 
-    // ===== BULK ACTIONS =====
+    // ==========================
+    // BULK ACTIONS
+    // ==========================
 
     public async Task<IActionResult> OnPostBlockAsync(Guid[] selectedIds)
     {
-        var users = await _db.Users.Where(u => selectedIds.Contains(u.Id)).ToListAsync();
-        users.ForEach(u => u.Status = UserStatus.Blocked);
+        if (selectedIds.Length == 0)
+            return RedirectToPage();
+
+        var users = await _db.Users
+            .Where(u => selectedIds.Contains(u.Id))
+            .ToListAsync();
+
+        foreach (var user in users)
+        {
+            user.Status = UserStatus.Blocked;
+        }
+
         await _db.SaveChangesAsync();
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostUnblockAsync(Guid[] selectedIds)
     {
-        var users = await _db.Users.Where(u => selectedIds.Contains(u.Id)).ToListAsync();
-        users.ForEach(u =>
+        if (selectedIds.Length == 0)
+            return RedirectToPage();
+
+        var users = await _db.Users
+            .Where(u => selectedIds.Contains(u.Id))
+            .ToListAsync();
+
+        foreach (var user in users)
         {
-            if (u.Status != UserStatus.Unverified)
-                u.Status = UserStatus.Active;
-        });
+            user.Status = UserStatus.Active;
+        }
+
         await _db.SaveChangesAsync();
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostDeleteAsync(Guid[] selectedIds)
     {
-        var users = await _db.Users.Where(u => selectedIds.Contains(u.Id)).ToListAsync();
-        _db.Users.RemoveRange(users);
-        await _db.SaveChangesAsync();
-        return RedirectToPage();
-    }
+        if (selectedIds.Length == 0)
+            return RedirectToPage();
 
-    public async Task<IActionResult> OnPostDeleteUnverifiedAsync()
-    {
-        var users = await _db.Users.Where(u => u.Status == UserStatus.Unverified).ToListAsync();
+        var users = await _db.Users
+            .Where(u => selectedIds.Contains(u.Id))
+            .ToListAsync();
+
         _db.Users.RemoveRange(users);
         await _db.SaveChangesAsync();
+
         return RedirectToPage();
     }
 }

@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using UserManagementApp.Models;
 using UserManagementApp.Data;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace UserManagementApp.Pages.Auth;
 
@@ -24,17 +26,23 @@ public class LoginModel : PageModel
 
     public class InputModel
     {
-        public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        public string Password { get; set; } = "";
     }
+
 
     public async Task<IActionResult> OnPostAsync()
     {
-        var user = _db.Users.FirstOrDefault(u => u.Email == Input.Email);
+        if (!ModelState.IsValid)
+            return Page();
 
-        if (user == null ||
-            _hasher.VerifyHashedPassword(user, user.PasswordHash, Input.Password)
-            == PasswordVerificationResult.Failed)
+        var user = await _db.Users
+            .SingleOrDefaultAsync(u => u.Email == Input.Email);
+
+        if (user == null)
         {
             ModelState.AddModelError("", "Invalid email or password.");
             return Page();
@@ -46,11 +54,23 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        var claims = new List<Claim>
+        var result = _hasher.VerifyHashedPassword(
+            user,
+            user.PasswordHash,
+            Input.Password
+        );
+
+        if (result == PasswordVerificationResult.Failed)
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Email)
-        };
+            ModelState.AddModelError("", "Invalid email or password.");
+            return Page();
+        }
+
+        var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Email)
+    };
 
         var identity = new ClaimsIdentity(
             claims,
