@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using UserManagementApp.Data;
 using UserManagementApp.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using UserManagementApp.Services;
+using UserManagementApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +29,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<UserStatusMiddleware>();
 
 app.MapRazorPages();
 
