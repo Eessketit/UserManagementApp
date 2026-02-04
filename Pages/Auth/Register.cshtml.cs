@@ -27,7 +27,7 @@ public class RegisterModel : PageModel
         [Required, EmailAddress]
         public string Email { get; set; } = "";
 
-        [Required, MinLength(6)]
+        [Required]
         public string Password { get; set; } = "";
 
         [Required, MinLength(2)]
@@ -63,9 +63,6 @@ public class RegisterModel : PageModel
         user.PasswordHash =
             _passwordHasher.HashPassword(user, Input.Password);
 
-        /*  _db.Users.Add(user);
-         await _db.SaveChangesAsync();
-  */
         try
         {
             _db.Users.Add(user);

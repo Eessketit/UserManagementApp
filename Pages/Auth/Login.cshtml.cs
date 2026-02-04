@@ -49,7 +49,7 @@ public class LoginModel : PageModel
 
         if (user.Status == UserStatus.Blocked)
         {
-            ModelState.AddModelError("", "Your account is blocked.");
+            ModelState.AddModelError("", "User is blocked.");
             return Page();
         }
 

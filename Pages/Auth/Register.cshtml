@@ -40,7 +40,13 @@
                     <!-- PASSWORD -->
                     <div class="mb-3">
                         <label asp-for="Input.Password" class="form-label"></label>
-                        <input asp-for="Input.Password" type="password" class="form-control" />
+                        <div class="input-group">
+                            <input asp-for="Input.Password" type="password" class="form-control"
+                                id="registerPasswordInput" />
+                            <button class="btn btn-outline-secondary" type="button" onclick="toggleRegisterPassword()">
+                                👁
+                            </button>
+                        </div>
                         <span asp-validation-for="Input.Password" class="text-danger"></span>
                     </div>
 
@@ -62,4 +68,10 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleRegisterPassword() {
+            const input = document.getElementById("registerPasswordInput");
+            input.type = input.type === "password" ? "text" : "password";
+        }
+    </script>
 }

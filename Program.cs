@@ -1,20 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using UserManagementApp.Data;
+using UserManagementApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =======================
 // KESTREL (Render)
-// =======================
 builder.WebHost.ConfigureKestrel(options =>
 {
     var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
     options.ListenAnyIP(int.Parse(port));
 });
 
-// =======================
 // DATABASE
-// =======================
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connectionString;
 
@@ -42,9 +39,7 @@ else
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// =======================
 // AUTH
-// =======================
 builder.Services
     .AddAuthentication(
         Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
@@ -62,9 +57,7 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// =======================
 // AUTO MIGRATIONS
-// =======================
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -75,6 +68,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseAuthentication();
+app.UseMiddleware<UserStatusMiddleware>();
 app.UseAuthorization();
 
 app.MapRazorPages();

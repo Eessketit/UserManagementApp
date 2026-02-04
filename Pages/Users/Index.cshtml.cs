@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using UserManagementApp.Data;
 using UserManagementApp.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace UserManagementApp.Pages.Users
 {
@@ -32,7 +34,7 @@ namespace UserManagementApp.Pages.Users
             );
 
             Users = await _db.Users
-                .OrderBy(u => u.Email)
+                .OrderByDescending(u => u.LastLoginAt)
                 .ToListAsync();
         }
 
@@ -51,6 +53,9 @@ namespace UserManagementApp.Pages.Users
 
         public async Task<IActionResult> OnPostDeleteAsync()
         {
+            var currentUserId = Guid.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!
+            );
             if (SelectedIds.Any())
             {
                 var users = _db.Users
@@ -58,6 +63,13 @@ namespace UserManagementApp.Pages.Users
 
                 _db.Users.RemoveRange(users);
                 await _db.SaveChangesAsync();
+            }
+            if (SelectedIds.Contains(currentUserId))
+            {
+                await HttpContext.SignOutAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme
+                );
+                return RedirectToPage("/Auth/Login");
             }
 
             return RedirectToPage();

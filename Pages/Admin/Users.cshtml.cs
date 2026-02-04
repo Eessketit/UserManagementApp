@@ -27,15 +27,14 @@ public class UsersModel : PageModel
             .ToListAsync();
     }
 
-    // ==========================
-    // BULK ACTIONS
-    // ==========================
-
     public async Task<IActionResult> OnPostBlockAsync(Guid[] selectedIds)
     {
         if (selectedIds.Length == 0)
+        {
+            TempData["StatusMessage"] = "Select at least one user to block.";
+            TempData["StatusType"] = "warning";
             return RedirectToPage();
-
+        }
         var users = await _db.Users
             .Where(u => selectedIds.Contains(u.Id))
             .ToListAsync();
@@ -46,14 +45,19 @@ public class UsersModel : PageModel
         }
 
         await _db.SaveChangesAsync();
+        TempData["StatusMessage"] = "Selected users were blocked.";
+        TempData["StatusType"] = "success";
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostUnblockAsync(Guid[] selectedIds)
     {
         if (selectedIds.Length == 0)
+        {
+            TempData["StatusMessage"] = "Select at least one user to unblock.";
+            TempData["StatusType"] = "warning";
             return RedirectToPage();
-
+        }
         var users = await _db.Users
             .Where(u => selectedIds.Contains(u.Id))
             .ToListAsync();
@@ -64,13 +68,19 @@ public class UsersModel : PageModel
         }
 
         await _db.SaveChangesAsync();
+        TempData["StatusMessage"] = "Selected users were unblocked.";
+        TempData["StatusType"] = "success";
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostDeleteAsync(Guid[] selectedIds)
     {
         if (selectedIds.Length == 0)
+        {
+            TempData["StatusMessage"] = "Select at least one user to delete.";
+            TempData["StatusType"] = "warning";
             return RedirectToPage();
+        }
 
         var users = await _db.Users
             .Where(u => selectedIds.Contains(u.Id))
@@ -78,6 +88,38 @@ public class UsersModel : PageModel
 
         _db.Users.RemoveRange(users);
         await _db.SaveChangesAsync();
+
+        TempData["StatusMessage"] = "Selected users were deleted.";
+        TempData["StatusType"] = "success";
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostDeleteUnverifiedAsync(Guid[] selectedIds)
+    {
+        if (selectedIds.Length == 0)
+        {
+            // IMPORTANT: status message for no-selection.
+            TempData["StatusMessage"] = "Select at least one unverified user to delete.";
+            TempData["StatusType"] = "warning";
+            return RedirectToPage();
+        }
+
+        var users = await _db.Users
+            .Where(u => selectedIds.Contains(u.Id) && u.Status == UserStatus.Unverified)
+            .ToListAsync();
+
+        if (users.Count == 0)
+        {
+            TempData["StatusMessage"] = "No unverified users were selected.";
+            TempData["StatusType"] = "warning";
+            return RedirectToPage();
+        }
+
+        _db.Users.RemoveRange(users);
+        await _db.SaveChangesAsync();
+
+        TempData["StatusMessage"] = "Selected unverified users were deleted.";
+        TempData["StatusType"] = "success";
 
         return RedirectToPage();
     }
