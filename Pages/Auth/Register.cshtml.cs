@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using UserManagementApp.Data;
 using UserManagementApp.Models;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace UserManagementApp.Pages.Auth;
 
@@ -61,9 +63,27 @@ public class RegisterModel : PageModel
         user.PasswordHash =
             _passwordHasher.HashPassword(user, Input.Password);
 
-        _db.Users.Add(user);
-        await _db.SaveChangesAsync();
+        /*  _db.Users.Add(user);
+         await _db.SaveChangesAsync();
+  */
+        try
+        {
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+        {
+            ModelState.AddModelError("Input.Email", "An account with this email already exists.");
+            return Page();
+        }
 
+        TempData["RegistrationSuccess"] = "User registered successfully.";
         return RedirectToPage("/Auth/Login");
     }
+    private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+    {
+        return ex.InnerException is PostgresException postgresException
+            && postgresException.SqlState == PostgresErrorCodes.UniqueViolation;
+    }
 }
+

@@ -41,37 +41,42 @@
                     </tr>
                 </thead>
                 <tbody>
-                @foreach (var user in Model.Users)
-                {
-                    var isCurrent = user.Id == Model.CurrentUserId;
+                    @foreach (var user in Model.Users)
+                    {
+                        var isCurrent = user.Id == Model.CurrentUserId;
 
-                    <tr class="@(isCurrent ? "table-info" : "")">
-                        <td>
-                            <input type="checkbox" name="SelectedIds" value="@user.Id" />
-                        </td>
-                        <td>
-                            @user.Email
-                            @if (isCurrent)
-                            {
-                                <span class="badge bg-secondary ms-1">You</span>
-                            }
-                        </td>
-                        <td>
-                            @if (user.Status == UserStatus.Blocked)
-                            {
-                                <span class="badge bg-danger">Blocked</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-success">Active</span>
-                            }
-                        </td>
-                        <td>@user.RegisteredAt.ToString("yyyy-MM-dd")</td>
-                        <td>
-                            @(user.LastLoginAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")
-                        </td>
-                    </tr>
-                }
+                        <tr class="@(isCurrent ? "table-info" : "")">
+                            <td>
+                                <input type="checkbox" name="SelectedIds" value="@user.Id" @(isCurrent ? "disabled" : "")
+                                    aria-label="Select @(isCurrent ? "current user" : "non-current user")" />
+                            </td>
+                            <td>
+                                @user.Email
+                                @if (isCurrent)
+                                {
+                                    <span class="badge bg-secondary ms-1">You</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-dark ms-1">Not you</span>
+                                }
+                            </td>
+                            <td>
+                                @if (user.Status == UserStatus.Blocked)
+                                {
+                                    <span class="badge bg-danger">Blocked</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                            </td>
+                            <td>@user.RegisteredAt.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @(user.LastLoginAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
@@ -80,11 +85,11 @@
 </div>
 
 @section Scripts {
-<script>
-    function toggleAll(source) {
-        document
-            .querySelectorAll('input[name="SelectedIds"]')
-            .forEach(cb => cb.checked = source.checked);
-    }
-</script>
+    <script>
+        function toggleAll(source) {
+            document
+                .querySelectorAll('input[name="SelectedIds"]')
+                .forEach(cb => cb.checked = source.checked);
+        }
+    </script>
 }
