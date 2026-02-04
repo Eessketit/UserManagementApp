@@ -14,11 +14,9 @@ namespace UserManagementApp.Models
         [Required]
         public string PasswordHash { get; set; } = null!;
 
-        // NEW
         [Required]
         public string Name { get; set; } = "N/A";
 
-        // NEW
         [Required]
         public string Address { get; set; } = "N/A";
 

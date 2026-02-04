@@ -32,13 +32,15 @@ public class LoginModel : PageModel
         [Required]
         public string Password { get; set; } = "";
     }
-    
+
     public async Task<IActionResult> OnPostAsync()
     {
+        // prevent empty password crash
         if (!ModelState.IsValid)
             return Page();
 
         var user = await _db.Users
+            .AsNoTracking()
             .SingleOrDefaultAsync(u => u.Email == Input.Email);
 
         if (user == null)
@@ -47,6 +49,7 @@ public class LoginModel : PageModel
             return Page();
         }
 
+        // blocked user check 
         if (user.Status == UserStatus.Blocked)
         {
             ModelState.AddModelError("", "User is blocked.");
@@ -66,10 +69,10 @@ public class LoginModel : PageModel
         }
 
         var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Name, user.Email)
-    };
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Email)
+        };
 
         var identity = new ClaimsIdentity(
             claims,
@@ -81,8 +84,13 @@ public class LoginModel : PageModel
             new ClaimsPrincipal(identity)
         );
 
-        user.LastLoginAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
+        // Update LastLoginAt safely
+        var trackedUser = await _db.Users.FindAsync(user.Id);
+        if (trackedUser != null)
+        {
+            trackedUser.LastLoginAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+        }
 
         return RedirectToPage("/Admin/Users");
     }

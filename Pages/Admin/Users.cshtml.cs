@@ -98,7 +98,7 @@ public class UsersModel : PageModel
     {
         if (selectedIds.Length == 0)
         {
-            // IMPORTANT: status message for no-selection.
+            // status message for no-selection.
             TempData["StatusMessage"] = "Select at least one unverified user to delete.";
             TempData["StatusType"] = "warning";
             return RedirectToPage();

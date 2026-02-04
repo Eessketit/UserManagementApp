@@ -47,10 +47,9 @@ public class RegisterModel : PageModel
             Id = Guid.NewGuid(),
             Email = Input.Email.Trim(),
 
-            // REQUIRED → always valid
             Name = Input.Name.Trim(),
 
-            // Optional → fallback ONLY if empty
+            // fallback ONLY if empty
             Address = string.IsNullOrWhiteSpace(Input.Address)
                 ? "N/A"
                 : Input.Address.Trim(),
