@@ -38,13 +38,16 @@ A web-based **User Management System** built with **ASP.NET** that provides auth
 ## 📸 Screenshots
 
 
-```md
-![Login Page](Screenshots/Sign_In_Page.png)
 
-![Registration Page](Screenshots/Register_Page.png)
+### Login Page
+![Login Page](pics/login.png)
 
-![Management Page](Screenshots/Management_Page.png)
-```
+### Registration Page
+![Screenshots](pics/register.png)
+
+### Management Page
+![Management Page](pics/management.png)
+
 
 ---
 
